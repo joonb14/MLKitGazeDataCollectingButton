@@ -25,4 +25,12 @@
 
   </com.google.mlkit.vision.demo.CameraSourcePreview>
 
+  <Button
+      android:id="@+id/MyButton"
+      android:layout_marginLeft="53px"
+      android:layout_marginTop="100px"
+      android:layout_width="224px"
+      android:layout_height="224px"
+      android:clickable = "true"/>
+
 </RelativeLayout>

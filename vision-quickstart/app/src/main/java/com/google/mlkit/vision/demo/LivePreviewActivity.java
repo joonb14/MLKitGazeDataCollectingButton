@@ -149,6 +149,12 @@ public final class LivePreviewActivity extends AppCompatActivity
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mRotationVector = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
+
+    public static int getCount(){
+        count = sf.getInt("count",0);
+        return count;
+    }
+
     public static SharedPreferences getSf() {
         return sf;
     }

@@ -1,3 +1,2 @@
-include ':androidlibsvm-release'
 rootProject.name='ML Kit Vision Quickstart'
 include ':app'

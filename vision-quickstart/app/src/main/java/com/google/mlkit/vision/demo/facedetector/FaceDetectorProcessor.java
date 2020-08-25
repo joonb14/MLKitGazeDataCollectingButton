@@ -16,13 +16,18 @@
 
 package com.google.mlkit.vision.demo.facedetector;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.PointF;
 
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 
@@ -30,6 +35,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.demo.GraphicOverlay;
 import com.google.mlkit.vision.demo.LivePreviewActivity;
+import com.google.mlkit.vision.demo.R;
 import com.google.mlkit.vision.demo.VisionProcessorBase;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceContour;
@@ -43,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -58,6 +65,13 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     public float rightEyeleft, rightEyetop, rightEyeright, rightEyebottom;
     private static final float EYE_BOX_RATIO = 1.4f;
     private String basedir;
+    private Button myBtn;
+    private RelativeLayout.LayoutParams params;
+    private int leftmargin;
+    private int topmargin;
+    private int save_gazeX;
+    private int save_gazeY;
+    private static boolean takePicture = false;
 
     Context Fcontext;
 
@@ -67,6 +81,38 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         Log.v(MANUAL_TESTING_LOG, "Face detector options: " + options);
         detector = FaceDetection.getClient(options);
         basedir = Environment.getExternalStorageDirectory().getPath()+"/CaptureApp/";
+        myBtn = (Button)((Activity)context).findViewById(R.id.MyButton);
+        myBtn.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                myBtn = (Button) view.findViewById(R.id.MyButton);
+                params = (RelativeLayout.LayoutParams) myBtn.getLayoutParams();
+                final int button_size = 224;
+                final int left_margin = 53;
+                final int top_margin = 136;
+                leftmargin = params.leftMargin + button_size / 2;
+                topmargin = params.topMargin + button_size / 2;
+                Log.d(TAG, leftmargin + "," + topmargin);
+                // TODO : takePicture;
+                takePicture = true;
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    long seed = System.currentTimeMillis();
+                    Random rand = new Random(seed);
+
+                    public void run() {
+                        int num = rand.nextInt(35);
+                        int row = num % 7 + 1; //1~7
+                        int col = num % 5 + 1; //1~5
+                        int topmargin = 100 + (row - 1) * top_margin + button_size * (row - 1);
+                        int leftmargin = col * left_margin + button_size * (col - 1);
+                        params.topMargin = topmargin;
+                        params.leftMargin = leftmargin;
+                        myBtn.setLayoutParams(params);
+                    }
+                }, 1000);
+            }
+        });
     }
 
     @Override
@@ -149,14 +195,23 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                  * Made For Debug Purpose you can save bitmap image to /sdcard/CaptureApp directory
                  * Then check how the bitmap data is.
                  * */
-                SharedPreferences sf = LivePreviewActivity.getSf();
-                int count = sf.getInt("count",0);
-                String file0 = "lefteye"+count+".jpg";
-                String file1 = "righteye"+count+".jpg";
-                SaveBitmapToFileCache(leftBitmap,basedir+"lefteye/",file0);
-                SaveBitmapToFileCache(rightBitmap,basedir+"righteye/",file1);
-                Log.d(TAG, "Bitmap saved");
-                LivePreviewActivity.addCount();
+                if (takePicture) {
+                    SharedPreferences sf = LivePreviewActivity.getSf();
+                    save_gazeX = leftmargin;
+                    save_gazeY = topmargin;
+                    int count = sf.getInt("count",0);
+                    String file0 = "lefteye"+count+".jpg";
+                    String file1 = "righteye"+count+".jpg";
+                    SaveBitmapToFileCache(leftBitmap,basedir+"lefteye/",file0);
+                    SaveBitmapToFileCache(rightBitmap,basedir+"righteye/",file1);
+                    Log.d(TAG, "Bitmap saved");
+                    LivePreviewActivity.addCount();
+                    String gyroData = LivePreviewActivity.getGyroData();
+                    String acceleroData = LivePreviewActivity.getAcceleroData();
+                    String rotationData = LivePreviewActivity.getOrientation();
+                    appendLog(count+","+save_gazeX+","+save_gazeY+","+rotationData+","+gyroData+","+acceleroData);
+                    takePicture = false;
+                }
             }
             catch (java.lang.IllegalArgumentException e) {
                 Log.e(TAG, "java.lang.IllegalArgumentException");
