@@ -61,7 +61,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     private static final String TAG = "MOBED_FaceDetector";
     private static int START_MILL = 650;
     private static int END_MILL = 450;
-    private static float EYE_OPEN_PROB = 0.0f;
+    private static float EYE_OPEN_PROB = 0.56f; // Empirical Value
     private int resolution = 224;
     public static Bitmap image;
     private final FaceDetector detector;
@@ -105,13 +105,13 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                 topmargin = params.topMargin + button_size / 2;
                 Log.d(TAG, leftmargin + "," + topmargin);
                 // TODO : takePicture;
-                takePicture = true;
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     long seed = System.currentTimeMillis();
                     Random rand = new Random(seed);
 
                     public void run() {
+                        takePicture = true;
                         int num = rand.nextInt(35);
                         int row = num % 7 + 1; //1~7
                         int col = num % 5 + 1; //1~5
@@ -155,7 +155,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                 float rightEyeOpenProb = face.getRightEyeOpenProbability();
                 float leftEyeOpenProb = face.getLeftEyeOpenProbability();
                 Log.d(TAG, "Right Eye open: "+ rightEyeOpenProb+", Left Eye open: "+leftEyeOpenProb);
-                if(rightEyeOpenProb<EYE_OPEN_PROB || leftEyeOpenProb <EYE_OPEN_PROB) continue;
+                if(/* rightEyeOpenProb<EYE_OPEN_PROB || */leftEyeOpenProb <EYE_OPEN_PROB) continue; // in my case my right eye is too small compared to left eye...
             }
             else {
                 Log.d(TAG, "Eye open prob is null");
@@ -246,20 +246,25 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                                 String accelZ = array[10];
                                 //rename the bitmap files!
                                 int count = sf.getInt("count", 0);
-                                String left_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/lefteye";
-                                File from = new File(left_path + "/" + left_file_name);
-                                File to = new File(left_save_dir + "/" + count + ".jpg");
-                                if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
-                                Log.d(TAG, "Left Eye Bitmap renamed: " + left_file_name + " to " + count + ".jpg");
-                                ;
-                                String right_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/righteye";
-                                from = new File(right_path + "/" + right_file_name);
-                                to = new File(right_save_dir + "/" + count + ".jpg");
-                                if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
-                                Log.d(TAG, "Right Eye Bitmap renamed: " + right_file_name + " to " + count + ".jpg");
+                                try {
+                                    String left_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/lefteye";
+                                    File from = new File(left_path + "/" + left_file_name);
+                                    File to = new File(left_save_dir + "/" + count + ".jpg");
+                                    if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
+                                    else Log.d(TAG, "Left Eye Bitmap renamed: " + left_file_name + " to " + count + ".jpg");
+                                    String right_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/righteye";
+                                    from = new File(right_path + "/" + right_file_name);
+                                    to = new File(right_save_dir + "/" + count + ".jpg");
+                                    if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
+                                    else Log.d(TAG, "Right Eye Bitmap renamed: " + right_file_name + " to " + count + ".jpg");
+                                }
+                                catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                                 appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + pitch + "," + roll + "," + gyroX + "," + gyroY + "," + gyroZ + "," + accelX + "," + accelY + "," + accelZ);
                                 LivePreviewActivity.addCount();
-                            } else {
+                            }
+                            else {
                                 //delete files
                                 Log.d(TAG,"Delete temp files");
                                 left_files[i].delete();
@@ -288,7 +293,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                 String count = "Count: "+LivePreviewActivity.getCount();
                 textView.setText(count);
                 if (InferenceInfoGraphic.getFramesPerSecond() != null) {
-                    String fps = "FPS: " + InferenceInfoGraphic.getFramesPerSecond() + " / Latency: " + InferenceInfoGraphic.getLatency();
+                    String fps = "FPS: " + InferenceInfoGraphic.getFramesPerSecond() + " |  Latency: " + InferenceInfoGraphic.getLatency();
                     textView2.setText(fps);
                 }
             }
