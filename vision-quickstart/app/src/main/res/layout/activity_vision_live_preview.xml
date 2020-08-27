@@ -10,8 +10,8 @@
 
   <com.google.mlkit.vision.demo.CameraSourcePreview
       android:id="@+id/preview"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
+      android:layout_width="1dp"
+      android:layout_height="1dp"
       android:layout_alignParentLeft="true"
       android:layout_alignParentTop="true">
 
@@ -24,9 +24,27 @@
         android:layout_alignParentTop="true"/>
 
   </com.google.mlkit.vision.demo.CameraSourcePreview>
-
+  <TextView
+      android:id="@+id/textview"
+      android:textColor="#FFFFFF"
+      android:text="@string/count"
+      android:textSize="20sp"
+      android:layout_alignParentTop="true"
+      android:layout_alignParentRight="true"
+      android:layout_width="150dp"
+      android:layout_height="30dp"/>
+  <TextView
+      android:id="@+id/textview2"
+      android:textColor="#FFFFFF"
+      android:text="@string/fps"
+      android:textSize="20sp"
+      android:layout_alignParentTop="true"
+      android:layout_alignParentLeft="true"
+      android:layout_width="150dp"
+      android:layout_height="30dp"/>
   <Button
       android:id="@+id/MyButton"
+      android:background="@android:color/white"
       android:layout_marginLeft="53px"
       android:layout_marginTop="100px"
       android:layout_width="224px"

@@ -31,11 +31,20 @@ public class InferenceInfoGraphic extends GraphicOverlay.Graphic {
 
     private final Paint textPaint;
     private final GraphicOverlay overlay;
-    private final double latency;
+    private static double latency;
+
+    public static double getLatency() {
+        return latency;
+    }
 
     // Only valid when a stream of input images is being processed. Null for single image mode.
     @Nullable
-    private final Integer framesPerSecond;
+    private static Integer framesPerSecond = null;
+
+    @Nullable
+    public static Integer getFramesPerSecond() {
+        return framesPerSecond;
+    }
 
     public InferenceInfoGraphic(
             GraphicOverlay overlay, double latency, @Nullable Integer framesPerSecond) {

@@ -121,6 +121,34 @@ public final class LivePreviewActivity extends AppCompatActivity
                 Log.e(TAG, "Cannot create Directory "+dir_path);
             }
         }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        else {
+            File directory = new File(dir_path);
+            directory.delete();
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/lefteye";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/righteye";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
 
         setContentView(R.layout.activity_vision_live_preview);
 
@@ -165,24 +193,6 @@ public final class LivePreviewActivity extends AppCompatActivity
         editor.putInt("count",count);
         editor.commit();
         return count;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.live_preview_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            intent.putExtra(SettingsActivity.EXTRA_LAUNCH_SOURCE, LaunchSource.LIVE_PREVIEW);
-            startActivity(intent);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

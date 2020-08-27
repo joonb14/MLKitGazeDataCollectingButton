@@ -28,12 +28,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.Task;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.demo.GraphicOverlay;
+import com.google.mlkit.vision.demo.InferenceInfoGraphic;
 import com.google.mlkit.vision.demo.LivePreviewActivity;
 import com.google.mlkit.vision.demo.R;
 import com.google.mlkit.vision.demo.VisionProcessorBase;
@@ -57,8 +59,10 @@ import java.util.Random;
  */
 public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     private static final String TAG = "MOBED_FaceDetector";
+    private static int START_MILL = 650;
+    private static int END_MILL = 450;
     private static float EYE_OPEN_PROB = 0.0f;
-    private int resolution = 64;
+    private int resolution = 224;
     public static Bitmap image;
     private final FaceDetector detector;
     public float leftEyeleft, leftEyetop, leftEyeright, leftEyebottom;
@@ -66,6 +70,10 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     private static final float EYE_BOX_RATIO = 1.4f;
     private String basedir;
     private Button myBtn;
+    //Button
+    private final int button_size = 224;
+    private final int left_margin = 53;
+    private final int top_margin = 136;
     private RelativeLayout.LayoutParams params;
     private int leftmargin;
     private int topmargin;
@@ -73,6 +81,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     private int save_gazeY;
     private static boolean takePicture = false;
 
+    private TextView textView,textView2;
     Context Fcontext;
 
     public FaceDetectorProcessor(Context context, FaceDetectorOptions options ) {
@@ -81,15 +90,17 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         Log.v(MANUAL_TESTING_LOG, "Face detector options: " + options);
         detector = FaceDetection.getClient(options);
         basedir = Environment.getExternalStorageDirectory().getPath()+"/CaptureApp/";
+        textView = ((Activity)context).findViewById(R.id.textview);
+        textView2 = ((Activity)context).findViewById(R.id.textview2);
         myBtn = (Button)((Activity)context).findViewById(R.id.MyButton);
+        params = (RelativeLayout.LayoutParams) myBtn.getLayoutParams();
+        leftmargin = params.leftMargin + button_size / 2;
+        topmargin = params.topMargin + button_size / 2;
         myBtn.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
                 myBtn = (Button) view.findViewById(R.id.MyButton);
                 params = (RelativeLayout.LayoutParams) myBtn.getLayoutParams();
-                final int button_size = 224;
-                final int left_margin = 53;
-                final int top_margin = 136;
                 leftmargin = params.leftMargin + button_size / 2;
                 topmargin = params.topMargin + button_size / 2;
                 Log.d(TAG, leftmargin + "," + topmargin);
@@ -197,24 +208,92 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                  * */
                 if (takePicture) {
                     SharedPreferences sf = LivePreviewActivity.getSf();
+                    long cur_time = System.currentTimeMillis();
+                    long start_time= cur_time-START_MILL;
+                    long end_time= cur_time-END_MILL;
+                    Log.d(TAG,"Start Time: "+start_time);
+                    Log.d(TAG,"End Time: "+end_time);
+
+                    //For the Left Eye
+                    String left_path = basedir+"temp/lefteye";
+                    String right_path = basedir+"temp/righteye";
+                    File left_directory = new File(left_path);
+                    File right_directory = new File(right_path);
+                    File[] left_files = left_directory.listFiles();
+                    File[] right_files = right_directory.listFiles();
+                    if(left_files!=null) {
+                        for (int i = 0; i < left_files.length; i++) {
+                            String right_file_name = right_files[i].getName();
+                            String left_file_name = left_files[i].getName();
+                            //left_file_name = time+","+save_gazeX+","+save_gazeY+","+rotationData+","+gyroData+","+acceleroData+".jpg";
+                            String[] array = left_file_name.split(",");
+                            //time
+                            long file_time = Long.parseLong(array[0]);
+                            if (file_time >= start_time && file_time <= end_time) {
+                                //gaze point
+                                String save_gazeX = array[1];
+                                String save_gazeY = array[2];
+                                //rotation vector
+                                String pitch = array[3];
+                                String roll = array[4];
+                                //gyroscope
+                                String gyroX = array[5];
+                                String gyroY = array[6];
+                                String gyroZ = array[7];
+                                //accelerometer
+                                String accelX = array[8];
+                                String accelY = array[9];
+                                String accelZ = array[10];
+                                //rename the bitmap files!
+                                int count = sf.getInt("count", 0);
+                                String left_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/lefteye";
+                                File from = new File(left_path + "/" + left_file_name);
+                                File to = new File(left_save_dir + "/" + count + ".jpg");
+                                if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
+                                Log.d(TAG, "Left Eye Bitmap renamed: " + left_file_name + " to " + count + ".jpg");
+                                ;
+                                String right_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/righteye";
+                                from = new File(right_path + "/" + right_file_name);
+                                to = new File(right_save_dir + "/" + count + ".jpg");
+                                if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
+                                Log.d(TAG, "Right Eye Bitmap renamed: " + right_file_name + " to " + count + ".jpg");
+                                appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + pitch + "," + roll + "," + gyroX + "," + gyroY + "," + gyroZ + "," + accelX + "," + accelY + "," + accelZ);
+                                LivePreviewActivity.addCount();
+                            } else {
+                                //delete files
+                                Log.d(TAG,"Delete temp files");
+                                left_files[i].delete();
+                                right_files[i].delete();
+                            }
+                        }
+                    }
+                    else {
+                        Log.d(TAG,"Files don't exist");
+                    }
+                    takePicture = false;
+                }
+                else {
+                    //Log Files with milliseconds
                     save_gazeX = leftmargin;
                     save_gazeY = topmargin;
-                    int count = sf.getInt("count",0);
-                    String file0 = "lefteye"+count+".jpg";
-                    String file1 = "righteye"+count+".jpg";
-                    SaveBitmapToFileCache(leftBitmap,basedir+"lefteye/",file0);
-                    SaveBitmapToFileCache(rightBitmap,basedir+"righteye/",file1);
-                    Log.d(TAG, "Bitmap saved");
-                    LivePreviewActivity.addCount();
+                    long time= System.currentTimeMillis();
                     String gyroData = LivePreviewActivity.getGyroData();
                     String acceleroData = LivePreviewActivity.getAcceleroData();
                     String rotationData = LivePreviewActivity.getOrientation();
-                    appendLog(count+","+save_gazeX+","+save_gazeY+","+rotationData+","+gyroData+","+acceleroData);
-                    takePicture = false;
+                    String file0 = time+","+save_gazeX+","+save_gazeY+","+rotationData+","+gyroData+","+acceleroData+","+".jpg";
+                    String file1 = time+".jpg";
+                    SaveBitmapToFileCache(leftBitmap,basedir+"temp/lefteye/",file0);
+                    SaveBitmapToFileCache(rightBitmap,basedir+"temp/righteye/",file1);
+                }
+                String count = "Count: "+LivePreviewActivity.getCount();
+                textView.setText(count);
+                if (InferenceInfoGraphic.getFramesPerSecond() != null) {
+                    String fps = "FPS: " + InferenceInfoGraphic.getFramesPerSecond() + " / Latency: " + InferenceInfoGraphic.getLatency();
+                    textView2.setText(fps);
                 }
             }
             catch (java.lang.IllegalArgumentException e) {
-                Log.e(TAG, "java.lang.IllegalArgumentException");
+                Log.e(TAG, "This Error mostly occurs when one of the eye's bounding box region is partly out of display");
                 e.printStackTrace();
             }
             catch (Exception e){
