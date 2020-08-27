@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:421372490474:android:6de66840625cd8ea269d93",
         "android_client_info": {
-          "package_name": "com.google.mlkit.vision.demo"
+          "package_name": "com.mobed.mlkit.vision.datacollector"
         }
       },
       "oauth_client": [
