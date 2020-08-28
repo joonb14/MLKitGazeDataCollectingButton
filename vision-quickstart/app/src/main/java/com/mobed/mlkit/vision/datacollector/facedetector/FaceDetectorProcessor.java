@@ -59,6 +59,15 @@ import java.util.Random;
  */
 public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     private static final String TAG = "MOBED_FaceDetector";
+    /**
+     * MODE Value
+     * 0: take picture before the onclick use the delay value to parse meaningful data
+     * 1: take picture just onclick happened
+     * 2: take picture just onclick happened & only for collecting gaze data on bottom of the phone
+     * 3:
+     * */
+    private final int MODE = 2;
+
     private static int START_MILL = 650;
     private static int END_MILL = 450;
     private static float EYE_OPEN_PROB = 0.56f; // Empirical Value
@@ -105,15 +114,21 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                 topmargin = params.topMargin + button_size / 2;
                 Log.d(TAG, leftmargin + "," + topmargin);
                 // TODO : takePicture;
+                takePicture = true;
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     long seed = System.currentTimeMillis();
                     Random rand = new Random(seed);
 
                     public void run() {
-                        takePicture = true;
-                        int num = rand.nextInt(35);
-                        int row = num % 7 + 1; //1~7
+                        int num;
+                        if (MODE == 2) {
+                            num = rand.nextInt(10)+25; //25 ~ 35
+                        }
+                        else {
+                            num = rand.nextInt(35);
+                        }
+                        int row = num / 5 + 1; //1~7
                         int col = num % 5 + 1; //1~5
                         int topmargin = 100 + (row - 1) * top_margin + button_size * (row - 1);
                         int leftmargin = col * left_margin + button_size * (col - 1);
@@ -205,92 +220,112 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                  * MOBED SaveBitmapToFileCache
                  * Made For Debug Purpose you can save bitmap image to /sdcard/CaptureApp directory
                  * Then check how the bitmap data is.
+                 * Use MODE value to change cases
                  * */
-                if (takePicture) {
-                    SharedPreferences sf = LivePreviewActivity.getSf();
-                    long cur_time = System.currentTimeMillis();
-                    long start_time= cur_time-START_MILL;
-                    long end_time= cur_time-END_MILL;
-                    Log.d(TAG,"Start Time: "+start_time);
-                    Log.d(TAG,"End Time: "+end_time);
+                if(MODE==0) {
+                    if (takePicture) {
+                        SharedPreferences sf = LivePreviewActivity.getSf();
+                        long cur_time = System.currentTimeMillis();
+                        long start_time = cur_time - START_MILL;
+                        long end_time = cur_time - END_MILL;
+                        Log.d(TAG, "Start Time: " + start_time);
+                        Log.d(TAG, "End Time: " + end_time);
 
-                    //For the Left Eye
-                    String left_path = basedir+"temp/lefteye";
-                    String right_path = basedir+"temp/righteye";
-                    File left_directory = new File(left_path);
-                    File right_directory = new File(right_path);
-                    File[] left_files = left_directory.listFiles();
-                    File[] right_files = right_directory.listFiles();
-                    if(left_files!=null) {
-                        for (int i = 0; i < left_files.length; i++) {
-                            String right_file_name = right_files[i].getName();
-                            String left_file_name = left_files[i].getName();
-                            //left_file_name = time+","+save_gazeX+","+save_gazeY+","+rotationData+","+gyroData+","+acceleroData+".jpg";
-                            String[] array = left_file_name.split(",");
-                            //time
-                            long file_time = Long.parseLong(array[0]);
-                            if (file_time >= start_time && file_time <= end_time) {
-                                //gaze point
-                                String save_gazeX = array[1];
-                                String save_gazeY = array[2];
-                                //rotation vector
-                                String pitch = array[3];
-                                String roll = array[4];
-                                //gyroscope
-                                String gyroX = array[5];
-                                String gyroY = array[6];
-                                String gyroZ = array[7];
-                                //accelerometer
-                                String accelX = array[8];
-                                String accelY = array[9];
-                                String accelZ = array[10];
-                                //rename the bitmap files!
-                                int count = sf.getInt("count", 0);
-                                try {
-                                    String left_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/lefteye";
-                                    File from = new File(left_path + "/" + left_file_name);
-                                    File to = new File(left_save_dir + "/" + count + ".jpg");
-                                    if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
-                                    else Log.d(TAG, "Left Eye Bitmap renamed: " + left_file_name + " to " + count + ".jpg");
-                                    String right_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/righteye";
-                                    from = new File(right_path + "/" + right_file_name);
-                                    to = new File(right_save_dir + "/" + count + ".jpg");
-                                    if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
-                                    else Log.d(TAG, "Right Eye Bitmap renamed: " + right_file_name + " to " + count + ".jpg");
+                        //For the Left Eye
+                        String left_path = basedir + "temp/lefteye";
+                        String right_path = basedir + "temp/righteye";
+                        File left_directory = new File(left_path);
+                        File right_directory = new File(right_path);
+                        File[] left_files = left_directory.listFiles();
+                        File[] right_files = right_directory.listFiles();
+                        if (left_files != null) {
+                            for (int i = 0; i < left_files.length; i++) {
+                                String right_file_name = right_files[i].getName();
+                                String left_file_name = left_files[i].getName();
+                                //left_file_name = time+","+save_gazeX+","+save_gazeY+","+rotationData+","+gyroData+","+acceleroData+".jpg";
+                                String[] array = left_file_name.split(",");
+                                //time
+                                long file_time = Long.parseLong(array[0]);
+                                if (file_time >= start_time && file_time <= end_time) {
+                                    //gaze point
+                                    String save_gazeX = array[1];
+                                    String save_gazeY = array[2];
+                                    //rotation vector
+                                    String pitch = array[3];
+                                    String roll = array[4];
+                                    //gyroscope
+                                    String gyroX = array[5];
+                                    String gyroY = array[6];
+                                    String gyroZ = array[7];
+                                    //accelerometer
+                                    String accelX = array[8];
+                                    String accelY = array[9];
+                                    String accelZ = array[10];
+                                    //rename the bitmap files!
+                                    int count = sf.getInt("count", 0);
+                                    try {
+                                        String left_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/lefteye";
+                                        File from = new File(left_path + "/" + left_file_name);
+                                        File to = new File(left_save_dir + "/" + count + ".jpg");
+                                        if (!from.renameTo(to))
+                                            Log.d(TAG, "Filename rename Failed");
+                                        else
+                                            Log.d(TAG, "Left Eye Bitmap renamed: " + left_file_name + " to " + count + ".jpg");
+                                        String right_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/righteye";
+                                        from = new File(right_path + "/" + right_file_name);
+                                        to = new File(right_save_dir + "/" + count + ".jpg");
+                                        if (!from.renameTo(to))
+                                            Log.d(TAG, "Filename rename Failed");
+                                        else
+                                            Log.d(TAG, "Right Eye Bitmap renamed: " + right_file_name + " to " + count + ".jpg");
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                    appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + pitch + "," + roll + "," + gyroX + "," + gyroY + "," + gyroZ + "," + accelX + "," + accelY + "," + accelZ);
+                                    LivePreviewActivity.addCount();
+                                } else {
+                                    //delete files
+                                    Log.d(TAG, "Delete temp files");
+                                    left_files[i].delete();
+                                    right_files[i].delete();
                                 }
-                                catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + pitch + "," + roll + "," + gyroX + "," + gyroY + "," + gyroZ + "," + accelX + "," + accelY + "," + accelZ);
-                                LivePreviewActivity.addCount();
                             }
-                            else {
-                                //delete files
-                                Log.d(TAG,"Delete temp files");
-                                left_files[i].delete();
-                                right_files[i].delete();
-                            }
+                        } else {
+                            Log.d(TAG, "Files don't exist");
                         }
+                        takePicture = false;
+                    } else {
+                        //Log Files with milliseconds
+                        save_gazeX = leftmargin;
+                        save_gazeY = topmargin;
+                        long time = System.currentTimeMillis();
+                        String gyroData = LivePreviewActivity.getGyroData();
+                        String acceleroData = LivePreviewActivity.getAcceleroData();
+                        String rotationData = LivePreviewActivity.getOrientation();
+                        String file0 = time + "," + save_gazeX + "," + save_gazeY + "," + rotationData + "," + gyroData + "," + acceleroData + "," + ".jpg";
+                        String file1 = time + ".jpg";
+                        SaveBitmapToFileCache(leftBitmap, basedir + "temp/lefteye/", file0);
+                        SaveBitmapToFileCache(rightBitmap, basedir + "temp/righteye/", file1);
                     }
-                    else {
-                        Log.d(TAG,"Files don't exist");
+                }
+                else if(MODE==1 || MODE==2) {
+                    if(takePicture) {
+                        save_gazeX = leftmargin;
+                        save_gazeY = topmargin;
+                        SharedPreferences sf = LivePreviewActivity.getSf();
+                        String gyroData = LivePreviewActivity.getGyroData();
+                        String acceleroData = LivePreviewActivity.getAcceleroData();
+                        String rotationData = LivePreviewActivity.getOrientation();
+                        int count = sf.getInt("count", 0);
+                        appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + rotationData + "," + gyroData + "," + acceleroData);
+                        String file0 = count + ".jpg";
+                        SaveBitmapToFileCache(leftBitmap, basedir + "CaptureApp/lefteye/", file0);
+                        SaveBitmapToFileCache(rightBitmap, basedir + "CaptureApp/righteye/", file0);
+                        LivePreviewActivity.addCount();
+                        takePicture=false;
                     }
-                    takePicture = false;
                 }
-                else {
-                    //Log Files with milliseconds
-                    save_gazeX = leftmargin;
-                    save_gazeY = topmargin;
-                    long time= System.currentTimeMillis();
-                    String gyroData = LivePreviewActivity.getGyroData();
-                    String acceleroData = LivePreviewActivity.getAcceleroData();
-                    String rotationData = LivePreviewActivity.getOrientation();
-                    String file0 = time+","+save_gazeX+","+save_gazeY+","+rotationData+","+gyroData+","+acceleroData+","+".jpg";
-                    String file1 = time+".jpg";
-                    SaveBitmapToFileCache(leftBitmap,basedir+"temp/lefteye/",file0);
-                    SaveBitmapToFileCache(rightBitmap,basedir+"temp/righteye/",file1);
-                }
-                String count = "Count: "+LivePreviewActivity.getCount();
+                String count = "Count: " + LivePreviewActivity.getCount();
                 textView.setText(count);
                 if (InferenceInfoGraphic.getFramesPerSecond() != null) {
                     String fps = "FPS: " + InferenceInfoGraphic.getFramesPerSecond() + " |  Latency: " + InferenceInfoGraphic.getLatency();

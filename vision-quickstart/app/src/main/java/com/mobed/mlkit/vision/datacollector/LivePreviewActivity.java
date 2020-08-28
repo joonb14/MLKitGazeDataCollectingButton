@@ -62,13 +62,12 @@ public final class LivePreviewActivity extends AppCompatActivity
         CompoundButton.OnCheckedChangeListener {
     private static final String FACE_DETECTION = "Face Detection";
     private static final String TAG = "MOBED_LivePreview";
-    private static final int PERMISSION_REQUESTS = 1;
+    private static final int PERMISSION_REQUESTS = 2;
 
     private CameraSource cameraSource = null;
     private CameraSourcePreview preview;
     private GraphicOverlay graphicOverlay;
     private String selectedModel = FACE_DETECTION;
-    private Interpreter interpreter;
     private static SharedPreferences sf;
     private static int count;
     private SensorManager mSensorManager;
@@ -94,6 +93,26 @@ public final class LivePreviewActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
+
+        setContentView(R.layout.activity_vision_live_preview);
+
+        preview = findViewById(R.id.preview);
+        if (preview == null) {
+            Log.d(TAG, "Preview is null");
+        }
+        graphicOverlay = findViewById(R.id.graphic_overlay);
+        if (graphicOverlay == null) {
+            Log.d(TAG, "graphicOverlay is null");
+        }
+
+        List<String> options = new ArrayList<>();
+        options.add(FACE_DETECTION);
+
+        if (allPermissionsGranted()) {
+            createCameraSource(selectedModel);
+        } else {
+            getRuntimePermissions();
+        }
 
         //MOBED
         String dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp";
@@ -146,27 +165,9 @@ public final class LivePreviewActivity extends AppCompatActivity
             }
         }
 
-        setContentView(R.layout.activity_vision_live_preview);
-
-        preview = findViewById(R.id.preview);
-        if (preview == null) {
-            Log.d(TAG, "Preview is null");
-        }
-        graphicOverlay = findViewById(R.id.graphic_overlay);
-        if (graphicOverlay == null) {
-            Log.d(TAG, "graphicOverlay is null");
-        }
-
-        List<String> options = new ArrayList<>();
-        options.add(FACE_DETECTION);
 
         sf = getPreferences(Context.MODE_PRIVATE);
         count = sf.getInt("count",0);
-        if (allPermissionsGranted()) {
-            createCameraSource(selectedModel);
-        } else {
-            getRuntimePermissions();
-        }
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mGyroSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
