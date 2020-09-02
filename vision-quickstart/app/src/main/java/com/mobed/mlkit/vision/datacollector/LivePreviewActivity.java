@@ -95,57 +95,6 @@ public final class LivePreviewActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
 
-        //MOBED
-        String dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/lefteye";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/righteye";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        else {
-            File directory = new File(dir_path);
-            directory.delete();
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/lefteye";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/righteye";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-
         setContentView(R.layout.activity_vision_live_preview);
 
         preview = findViewById(R.id.preview);
@@ -167,6 +116,7 @@ public final class LivePreviewActivity extends AppCompatActivity
         } else {
             getRuntimePermissions();
         }
+        createDirectories();
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mGyroSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
@@ -178,6 +128,7 @@ public final class LivePreviewActivity extends AppCompatActivity
         count = sf.getInt("count",0);
         return count;
     }
+
 
     public static SharedPreferences getSf() {
         return sf;
@@ -443,5 +394,115 @@ public final class LivePreviewActivity extends AppCompatActivity
     }
     public static String getOrientation(){
         return pitch+ ","+roll;
+    }
+
+
+    private final void createDirectories(){
+        //MOBED
+        String dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/lefteye";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/righteye";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/face";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/facegrid";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/lefteyegrid";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/righteyegrid";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        else {
+            File directory = new File(dir_path);
+            directory.delete();
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/lefteye";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/righteye";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/face";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/facegrid";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/lefteyegrid";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
+        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/righteyegrid";
+        if (!dir_exists(dir_path)){
+            File directory = new File(dir_path);
+            if(!directory.mkdirs()){
+                Log.e(TAG, "Cannot create Directory "+dir_path);
+            }
+        }
     }
 }
