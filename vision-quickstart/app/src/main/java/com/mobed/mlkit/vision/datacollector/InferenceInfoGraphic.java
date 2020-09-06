@@ -18,6 +18,7 @@ package com.mobed.mlkit.vision.datacollector;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -31,7 +32,6 @@ public class InferenceInfoGraphic extends GraphicOverlay.Graphic {
 
     private final Paint textPaint;
     private final GraphicOverlay overlay;
-    private static double latency;
 
     public static double getLatency() {
         return latency;
@@ -40,6 +40,7 @@ public class InferenceInfoGraphic extends GraphicOverlay.Graphic {
     // Only valid when a stream of input images is being processed. Null for single image mode.
     @Nullable
     private static Integer framesPerSecond = null;
+    private static double latency;
 
     @Nullable
     public static Integer getFramesPerSecond() {
@@ -62,19 +63,22 @@ public class InferenceInfoGraphic extends GraphicOverlay.Graphic {
     public synchronized void draw(Canvas canvas) {
         float x = TEXT_SIZE * 0.5f;
         float y = TEXT_SIZE * 1.5f;
+//        Log.d("MOBED_INFO","InputImage size: " + overlay.getImageWidth() + "x" + overlay.getImageHeight());
+//        Log.d("MOBED_INFO","FPS: " + framesPerSecond + ", latency: " + latency + " ms");
+//        Log.d("MOBED_INFO","Latency: " + latency + " ms");
 
-        canvas.drawText(
-                "InputImage size: " + overlay.getImageWidth() + "x" + overlay.getImageHeight(),
-                x,
-                y,
-                textPaint);
-
-        // Draw FPS (if valid) and inference latency
-        if (framesPerSecond != null) {
-            canvas.drawText(
-                    "FPS: " + framesPerSecond + ", latency: " + latency + " ms", x, y + TEXT_SIZE, textPaint);
-        } else {
-            canvas.drawText("Latency: " + latency + " ms", x, y + TEXT_SIZE, textPaint);
-        }
+//        canvas.drawText(
+//                "InputImage size: " + overlay.getImageWidth() + "x" + overlay.getImageHeight(),
+//                x,
+//                y,
+//                textPaint);
+//
+//        // Draw FPS (if valid) and inference latency
+//        if (framesPerSecond != null) {
+//            canvas.drawText(
+//                    "FPS: " + framesPerSecond + ", latency: " + latency + " ms", x, y + TEXT_SIZE, textPaint);
+//        } else {
+//            canvas.drawText("Latency: " + latency + " ms", x, y + TEXT_SIZE, textPaint);
+//        }
     }
 }
