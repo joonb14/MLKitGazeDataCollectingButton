@@ -27,6 +27,8 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.SystemClock;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -65,9 +67,10 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     /**
      * Change Data Collection Mode by MODE Value
      */
-    private int MODE = 1;
+    private int MODE = 2;
     private final int START_MILL = 450;
-    private final int END_MILL = 350;
+    private final int END_MILL = 750;
+    private final int BUTTON_MOVE_DELAY = 1000;
     /**
      * 0: Data Collecting from OnClick time-START_MILL to OnClick time-END_MILL
      * 1: Data Collecting on OnClick time
@@ -89,7 +92,11 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     public float rightEyeleft, rightEyetop, rightEyeright, rightEyebottom;
     private String basedir;
     private Button myBtn;
-    //Button
+    private long mLastClickTime;
+    /**
+     * Device Specific Sizes
+     * Button location
+     * */
     private int button_size = 224;
     private int left_margin = 53;
     private int top_margin = 136;
@@ -113,6 +120,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         basedir = Environment.getExternalStorageDirectory().getPath()+"/CaptureApp/";
         textView = ((Activity)context).findViewById(R.id.textview);
         textView2 = ((Activity)context).findViewById(R.id.textview2);
+        Log.d(TAG,"");
 
         float[] mirrorY = {
                 -1, 0, 0,
@@ -122,6 +130,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
 
         matrix = new Matrix();
         matrix.setValues(mirrorY);
+        DisplayMetrics dm = Fcontext.getResources().getDisplayMetrics();
 
         myBtn = (Button)((Activity)context).findViewById(R.id.MyButton);
         params = (RelativeLayout.LayoutParams) myBtn.getLayoutParams();
@@ -130,6 +139,13 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
         myBtn.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                // mis-clicking prevention, using threshold of BUTTON_MOVE_DELAY ms
+                long cur_time = System.currentTimeMillis();
+                if (cur_time - mLastClickTime < BUTTON_MOVE_DELAY){
+                    return;
+                }
+                mLastClickTime = System.currentTimeMillis();
                 myBtn = (Button) view.findViewById(R.id.MyButton);
                 params = (RelativeLayout.LayoutParams) myBtn.getLayoutParams();
                 leftmargin = params.leftMargin + button_size / 2;
@@ -143,6 +159,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                     Random rand = new Random(seed);
 
                     public void run() {
+                        takePicture=false;
                         int num = rand.nextInt(35);
                         int row = num % 7 + 1; //1~7
                         int col = num % 5 + 1; //1~5
@@ -152,7 +169,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                         params.leftMargin = leftmargin;
                         myBtn.setLayoutParams(params);
                     }
-                }, 1000);
+                }, BUTTON_MOVE_DELAY);
             }
         });
     }
@@ -182,10 +199,12 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
             //This is how you get coordinates, and crop left and right eye
             //Look at https://firebase.google.com/docs/ml-kit/detect-faces#example_2_face_contour_detection for details.
             //We specifically used Eye Contour's point 0 and 8.
+            Log.d("Euler","Euler X:"+face.getHeadEulerAngleX()+" Y:"+face.getHeadEulerAngleY()+" Z:"+ face.getHeadEulerAngleZ());
             if (face.getRightEyeOpenProbability() != null && face.getLeftEyeOpenProbability() != null) {
                 float rightEyeOpenProb = face.getRightEyeOpenProbability();
                 float leftEyeOpenProb = face.getLeftEyeOpenProbability();
                 Log.d(TAG, "Right Eye open: "+ rightEyeOpenProb+", Left Eye open: "+leftEyeOpenProb);
+                if(rightEyeOpenProb<EYE_OPEN_PROB || leftEyeOpenProb <EYE_OPEN_PROB) continue;
                 if(rightEyeOpenProb<EYE_OPEN_PROB || leftEyeOpenProb <EYE_OPEN_PROB) continue;
             }
             else {
@@ -365,6 +384,10 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                                     String accelX = array[8];
                                     String accelY = array[9];
                                     String accelZ = array[10];
+                                    //euler xyz
+                                    String eulerX = array[11];
+                                    String eulerY = array[12];
+                                    String eulerZ = array[13];
                                     //rename the bitmap files!
                                     int count = LivePreviewActivity.getCount();
                                     //Left Eye
@@ -385,28 +408,29 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                                     from = new File(face_path + "/" + face_file_name);
                                     to = new File(face_save_dir + "/" + file0);
                                     if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
-                                    Log.d(TAG, "Right Eye Bitmap renamed: " + face_file_name + " to " + file0);
+                                    Log.d(TAG, "face Bitmap renamed: " + face_file_name + " to " + file0);
                                     //Face Grid
                                     String facegrid_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/facegrid";
                                     @SuppressLint("DefaultLocale") String file1 = String.format("%05d" , count) + ".csv";
                                     from = new File(facegrid_path + "/" + facegrid_file_name);
                                     to = new File(facegrid_save_dir + "/" + file1);
                                     if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
-                                    Log.d(TAG, "Right Eye Bitmap renamed: " + facegrid_save_dir + " to " + file1);
+                                    Log.d(TAG, "facegrid renamed: " + facegrid_save_dir + " to " + file1);
                                     //Left Eye Grid
                                     String left_eyegrid_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/lefteyegrid";
                                     from = new File(left_eyegrid_path + "/" + left_eyegrid_file_name);
                                     to = new File(left_eyegrid_save_dir + "/" + file1);
                                     if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
-                                    Log.d(TAG, "Right Eye Bitmap renamed: " + left_eyegrid_save_dir + " to " + file1);
+                                    Log.d(TAG, "lefteyegrid renamed: " + left_eyegrid_save_dir + " to " + file1);
                                     //Right Eye Grid
                                     String right_eyegrid_save_dir = Environment.getExternalStorageDirectory().getPath() + "/CaptureApp/righteyegrid";
                                     from = new File(right_eyegrid_path + "/" + right_eyegrid_file_name);
                                     to = new File(right_eyegrid_save_dir + "/" + file1);
                                     if (!from.renameTo(to)) Log.d(TAG, "Filename rename Failed");
-                                    Log.d(TAG, "Right Eye Bitmap renamed: " + right_eyegrid_save_dir + " to " + file1);
+                                    Log.d(TAG, "righteyegrid renamed: " + right_eyegrid_save_dir + " to " + file1);
                                     //Log
-                                    appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + pitch + "," + roll + "," + gyroX + "," + gyroY + "," + gyroZ + "," + accelX + "," + accelY + "," + accelZ);
+                                    appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + pitch + "," + roll + "," + gyroX + "," + gyroY + "," + gyroZ + "," +
+                                            accelX + "," + accelY + "," + accelZ + "," +eulerX + "," + eulerY + "," + eulerZ);
                                     LivePreviewActivity.addCount();
                                 } else {
                                     //delete files
@@ -431,7 +455,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                         String gyroData = LivePreviewActivity.getGyroData();
                         String acceleroData = LivePreviewActivity.getAcceleroData();
                         String rotationData = LivePreviewActivity.getOrientation();
-                        String file0 = time + "," + save_gazeX + "," + save_gazeY + "," + rotationData + "," + gyroData + "," + acceleroData + "," + ".jpg";
+                        String file0 = time + "," + save_gazeX + "," + save_gazeY + "," + rotationData + "," + gyroData + "," + acceleroData + "," + face.getHeadEulerAngleX()+","+face.getHeadEulerAngleY()+","+face.getHeadEulerAngleZ()+ ".jpg";
                         String file1 = time + ".jpg";
                         String file2 = time + ".csv";
                         SaveBitmapToFileCache(leftBitmap, basedir + "temp/lefteye/", file0);
@@ -460,9 +484,35 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                         gridLog(face_grid,face_grid_size,basedir + "facegrid/"+file1);
                         gridLog(lefteye_grid,eye_grid_size,basedir + "lefteyegrid/"+file1);
                         gridLog(righteye_grid,eye_grid_size,basedir + "righteyegrid/"+file1);
-                        appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + rotationData + "," + gyroData + "," + acceleroData);
+                        appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + rotationData + "," + gyroData + "," + acceleroData+","+
+                                face.getHeadEulerAngleX()+","+face.getHeadEulerAngleY()+","+face.getHeadEulerAngleZ());
                         LivePreviewActivity.addCount();
                         takePicture=false;
+                    }
+                }else if(MODE==2){
+                    // 1: Data Collecting on OnClick time
+                    if(takePicture) {
+                        long cur_time = System.currentTimeMillis();
+                        if(cur_time - mLastClickTime < END_MILL) {
+                            save_gazeX = leftmargin;
+                            save_gazeY = topmargin;
+                            long time = System.currentTimeMillis();
+                            int count = LivePreviewActivity.getCount();
+                            String gyroData = LivePreviewActivity.getGyroData();
+                            String acceleroData = LivePreviewActivity.getAcceleroData();
+                            String rotationData = LivePreviewActivity.getOrientation();
+                            @SuppressLint("DefaultLocale") String file0 = String.format("%05d", count) + ".jpg";
+                            SaveBitmapToFileCache(leftBitmap, basedir + "lefteye/", file0);
+                            SaveBitmapToFileCache(rightBitmap, basedir + "righteye/", file0);
+                            SaveBitmapToFileCache(faceBitmap, basedir + "face/", file0);
+                            @SuppressLint("DefaultLocale") String file1 = String.format("%05d", count) + ".csv";
+                            gridLog(face_grid, face_grid_size, basedir + "facegrid/" + file1);
+                            gridLog(lefteye_grid, eye_grid_size, basedir + "lefteyegrid/" + file1);
+                            gridLog(righteye_grid, eye_grid_size, basedir + "righteyegrid/" + file1);
+                            appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + rotationData + "," + gyroData + "," + acceleroData + "," +
+                                    face.getHeadEulerAngleX() + "," + face.getHeadEulerAngleY() + "," + face.getHeadEulerAngleZ());
+                            LivePreviewActivity.addCount();
+                        }
                     }
                 }
                 String count = "Count: "+LivePreviewActivity.getCount();
@@ -547,7 +597,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
             try {
                 logFile.createNewFile();
                 BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
-                buf.append("count,gazeX,gazeY,pitch,roll,gyroX,gyroY,gyroZ,accelX,accelY,accelZ");
+                buf.append("count,gazeX,gazeY,pitch,roll,gyroX,gyroY,gyroZ,accelX,accelY,accelZ,eulerX,eulerY,eulerZ");
                 buf.newLine();
                 buf.close();
             }

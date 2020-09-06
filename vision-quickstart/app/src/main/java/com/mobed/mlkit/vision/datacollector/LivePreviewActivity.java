@@ -116,6 +116,7 @@ public final class LivePreviewActivity extends AppCompatActivity
         } else {
             getRuntimePermissions();
         }
+
         createDirectories();
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -451,13 +452,6 @@ public final class LivePreviewActivity extends AppCompatActivity
         dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp";
         if (!dir_exists(dir_path)){
             File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        else {
-            File directory = new File(dir_path);
-            directory.delete();
             if(!directory.mkdirs()){
                 Log.e(TAG, "Cannot create Directory "+dir_path);
             }
