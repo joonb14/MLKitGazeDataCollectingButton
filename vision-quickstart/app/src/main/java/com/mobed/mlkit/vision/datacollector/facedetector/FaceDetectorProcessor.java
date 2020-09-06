@@ -96,18 +96,22 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     /**
      * Device Specific Sizes
      * Button location
+     * Row & Column Size
      * */
-    private int button_size = 224;
-    private int left_margin = 53;
-    private int top_margin = 136;
+    private final int ROW_NUM = 20;
+    private final int COL_NUM = 10;
+    private int button_size,left_margin,top_margin;
     private RelativeLayout.LayoutParams params;
     private int leftmargin;
     private int topmargin;
+    private int status_bar_height = 100;
+    private int navigation_bar_height = 200;
     private int save_gazeX;
     private int save_gazeY;
     private static boolean takePicture = false;
     private int[][] face_grid, lefteye_grid, righteye_grid;
     private Matrix matrix;
+    private DisplayMetrics dm;
 
     private TextView textView,textView2;
     Context Fcontext;
@@ -130,10 +134,39 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
 
         matrix = new Matrix();
         matrix.setValues(mirrorY);
-        DisplayMetrics dm = Fcontext.getResources().getDisplayMetrics();
+        int resourceId = Fcontext.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            status_bar_height = Fcontext.getResources().getDimensionPixelSize(resourceId);
+        }
+        resourceId = Fcontext.getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            navigation_bar_height = Fcontext.getResources().getDimensionPixelSize(resourceId);
+        }
+        dm = Fcontext.getResources().getDisplayMetrics();
+        int grid_x = dm.widthPixels/COL_NUM;
+        int grid_y = ((dm.heightPixels - status_bar_height) - navigation_bar_height)/ROW_NUM;
+        int grid_padding_x,grid_padding_y,button_size;
+        if(grid_x < grid_y) {
+            grid_padding_x = grid_x / 10;
+            button_size = grid_x - grid_padding_x;
+            grid_padding_y = grid_y - button_size;
+        }
+        else {
+            grid_padding_y = grid_y / 10;
+            button_size = grid_y - grid_padding_y;
+            grid_padding_x = grid_x - button_size;
+        }
+        this.button_size = button_size;
+        this.left_margin = grid_padding_x;
+        this.top_margin = grid_padding_y;
 
         myBtn = (Button)((Activity)context).findViewById(R.id.MyButton);
         params = (RelativeLayout.LayoutParams) myBtn.getLayoutParams();
+        params.width = button_size;
+        params.height = button_size;
+        params.leftMargin = left_margin/2;
+        params.topMargin = status_bar_height + top_margin/2;
+        myBtn.setLayoutParams(params);
         leftmargin = params.leftMargin + button_size / 2;
         topmargin = params.topMargin + button_size / 2;
         myBtn.setOnClickListener(new Button.OnClickListener() {
@@ -150,7 +183,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                 params = (RelativeLayout.LayoutParams) myBtn.getLayoutParams();
                 leftmargin = params.leftMargin + button_size / 2;
                 topmargin = params.topMargin + button_size / 2;
-                Log.d(TAG, leftmargin + "," + topmargin);
+                Log.d(TAG, "Button loc: "+leftmargin + "," + topmargin);
                 // TODO : takePicture;
                 takePicture = true;
                 Handler handler = new Handler();
@@ -160,11 +193,12 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
 
                     public void run() {
                         takePicture=false;
-                        int num = rand.nextInt(35);
-                        int row = num % 7 + 1; //1~7
-                        int col = num % 5 + 1; //1~5
-                        int topmargin = 100 + (row - 1) * top_margin + button_size * (row - 1);
-                        int leftmargin = col * left_margin + button_size * (col - 1);
+                        int size = ROW_NUM*COL_NUM;
+                        int num = rand.nextInt(size);
+                        int row = num / COL_NUM + 1; //1~20
+                        int col = num % COL_NUM + 1; //1~10
+                        int topmargin = status_bar_height + (row - 1) * top_margin + button_size * (row - 1);
+                        int leftmargin = left_margin/2 + (col - 1) * left_margin + button_size * (col - 1);
                         params.topMargin = topmargin;
                         params.leftMargin = leftmargin;
                         myBtn.setLayoutParams(params);
@@ -199,6 +233,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
             //This is how you get coordinates, and crop left and right eye
             //Look at https://firebase.google.com/docs/ml-kit/detect-faces#example_2_face_contour_detection for details.
             //We specifically used Eye Contour's point 0 and 8.
+            Log.d(TAG,"displaymetric width,height: "+ dm.widthPixels+","+dm.heightPixels);
             Log.d("Euler","Euler X:"+face.getHeadEulerAngleX()+" Y:"+face.getHeadEulerAngleY()+" Z:"+ face.getHeadEulerAngleZ());
             if (face.getRightEyeOpenProbability() != null && face.getLeftEyeOpenProbability() != null) {
                 float rightEyeOpenProb = face.getRightEyeOpenProbability();
@@ -268,19 +303,11 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                  * */
                 int image_width = image.getWidth();
                 int image_height = image.getHeight();
-                Log.d("WNUM","image_width: "+image_width);
-                Log.d("WNUM","image_height: "+image_height);
                 //left, bottom, width, height
                 float w_start = Math.round(face_grid_size*(facePos.left/(float)image_width));
                 float h_start = Math.round(face_grid_size*(facePos.top/(float)image_height));
-                Log.d("WNUM","w_start: "+w_start);
-                Log.d("WNUM","h_start: "+h_start);
-                Log.d("WNUM","faceboxWsize: "+faceboxWsize);
-                Log.d("WNUM","faceboxHsize: "+faceboxHsize);
                 float w_num = Math.round(face_grid_size*((faceboxWsize)/(float)image_width));
                 float h_num = Math.round(face_grid_size*((faceboxHsize)/(float)image_height));
-                Log.d("WNUM","w_num: "+w_num);
-                Log.d("WNUM","h_num: "+h_num);
 
                 face_grid = new int[face_grid_size][face_grid_size];
                 for(int h=0; h<face_grid_size; h++){

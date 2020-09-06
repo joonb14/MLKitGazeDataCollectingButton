@@ -63,9 +63,9 @@ public class InferenceInfoGraphic extends GraphicOverlay.Graphic {
     public synchronized void draw(Canvas canvas) {
         float x = TEXT_SIZE * 0.5f;
         float y = TEXT_SIZE * 1.5f;
-        Log.d("MOBED_INFO","InputImage size: " + overlay.getImageWidth() + "x" + overlay.getImageHeight());
-        Log.d("MOBED_INFO","FPS: " + framesPerSecond + ", latency: " + latency + " ms");
-        Log.d("MOBED_INFO","Latency: " + latency + " ms");
+//        Log.d("MOBED_INFO","InputImage size: " + overlay.getImageWidth() + "x" + overlay.getImageHeight());
+//        Log.d("MOBED_INFO","FPS: " + framesPerSecond + ", latency: " + latency + " ms");
+//        Log.d("MOBED_INFO","Latency: " + latency + " ms");
 
 //        canvas.drawText(
 //                "InputImage size: " + overlay.getImageWidth() + "x" + overlay.getImageHeight(),
