@@ -197,7 +197,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                         int num = rand.nextInt(size);
                         int row = num / COL_NUM + 1; //1~20
                         int col = num % COL_NUM + 1; //1~10
-                        int topmargin = status_bar_height + (row - 1) * top_margin + button_size * (row - 1);
+                        int topmargin = status_bar_height  + top_margin/2 + (row - 1) * top_margin + button_size * (row - 1);
                         int leftmargin = left_margin/2 + (col - 1) * left_margin + button_size * (col - 1);
                         params.topMargin = topmargin;
                         params.leftMargin = leftmargin;
