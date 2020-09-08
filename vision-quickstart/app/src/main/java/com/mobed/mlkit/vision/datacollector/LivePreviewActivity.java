@@ -107,7 +107,6 @@ public final class LivePreviewActivity extends AppCompatActivity
 
         List<String> options = new ArrayList<>();
         options.add(FACE_DETECTION);
-<<<<<<< HEAD
 
         if (allPermissionsGranted()) {
             createCameraSource(selectedModel);
@@ -165,9 +164,6 @@ public final class LivePreviewActivity extends AppCompatActivity
                 Log.e(TAG, "Cannot create Directory "+dir_path);
             }
         }
-
-=======
->>>>>>> 14fa15c27082a712c315853a17ed7cbe49654f74
 
         sf = getPreferences(Context.MODE_PRIVATE);
         count = sf.getInt("count",0);

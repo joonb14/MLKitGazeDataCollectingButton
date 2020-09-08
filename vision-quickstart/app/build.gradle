@@ -6,7 +6,7 @@ android {
     compileSdkVersion 29
 
     defaultConfig {
-        applicationId "com.google.mlkit.vision.demo"
+        applicationId "com.mobed.mlkit.vision.datacollector"
         minSdkVersion 24
         multiDexEnabled true
         targetSdkVersion 29
