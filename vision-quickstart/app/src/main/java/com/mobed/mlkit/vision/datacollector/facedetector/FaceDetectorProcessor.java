@@ -594,6 +594,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
     protected void onFailure(@NonNull Exception e) {
         Log.e(TAG, "Face detection failed " + e);
     }
+
     public void gridLog(int grid [][], int size, String path){
         File logFile = new File(path);
         if (!logFile.exists()) {

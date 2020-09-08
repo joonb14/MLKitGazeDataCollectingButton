@@ -114,57 +114,6 @@ public final class LivePreviewActivity extends AppCompatActivity
             getRuntimePermissions();
         }
 
-        //MOBED
-        String dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/lefteye";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/righteye";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        else {
-            File directory = new File(dir_path);
-            directory.delete();
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/lefteye";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-        dir_path = Environment.getExternalStorageDirectory() + "/CaptureApp/temp/righteye";
-        if (!dir_exists(dir_path)){
-            File directory = new File(dir_path);
-            if(!directory.mkdirs()){
-                Log.e(TAG, "Cannot create Directory "+dir_path);
-            }
-        }
-
         sf = getPreferences(Context.MODE_PRIVATE);
         count = sf.getInt("count",0);
 
@@ -286,6 +235,7 @@ public final class LivePreviewActivity extends AppCompatActivity
         Log.d(TAG, "onResume");
         createCameraSource(selectedModel);
         startCameraSource();
+        createDirectories();
         mSensorManager.registerListener(gyroListener, mGyroSensor, SensorManager.SENSOR_DELAY_GAME);
         mSensorManager.registerListener(acceleroListener, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
         mSensorManager.registerListener(rotationListener, mRotationVector, SensorManager.SENSOR_DELAY_GAME);
