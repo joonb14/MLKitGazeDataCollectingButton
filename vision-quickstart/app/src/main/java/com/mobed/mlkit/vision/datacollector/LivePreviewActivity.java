@@ -115,6 +115,7 @@ public final class LivePreviewActivity extends AppCompatActivity
         }
 
         sf = getPreferences(Context.MODE_PRIVATE);
+        //sf.edit().remove("count").commit();
         count = sf.getInt("count",0);
 
         createDirectories();

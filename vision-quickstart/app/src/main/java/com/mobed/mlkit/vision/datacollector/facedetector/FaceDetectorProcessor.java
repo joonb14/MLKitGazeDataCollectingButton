@@ -90,7 +90,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
 
     public static Bitmap image;
     private final FaceDetector detector;
-    public float leftEyeleft, leftEyetop, leftEyeright, leftEyebottom;
+    public float leftEyeleft, leftEyetop, leftEyeright, leftEyebottom; // leftEyeleft,leftEyetop,leftEyeright,leftEyebottom,rightEyeleft,rightEyetop,rightEyeright,rightEyebottom
     public float rightEyeleft, rightEyetop, rightEyeright, rightEyebottom;
     private String basedir;
     private Button myBtn;
@@ -297,6 +297,23 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                     rightBitmap = Bitmap.createScaledBitmap(rightBitmap, resolution,resolution,false);
                 }
                 /**
+                 * Left, Right Eye Contour for SAGE
+                 * */
+
+                if (graphicOverlay.isImageFlipped) {
+                    leftEyeleft = graphicOverlay.getWidth() - (leftEyeleft * graphicOverlay.scaleFactor - graphicOverlay.postScaleWidthOffset);
+                    leftEyeright = graphicOverlay.getWidth() - (leftEyeright * graphicOverlay.scaleFactor - graphicOverlay.postScaleWidthOffset);
+                    rightEyeleft = graphicOverlay.getWidth() - (rightEyeleft * graphicOverlay.scaleFactor - graphicOverlay.postScaleWidthOffset);
+                    rightEyeright = graphicOverlay.getWidth() - (rightEyeright * graphicOverlay.scaleFactor - graphicOverlay.postScaleWidthOffset);
+                } else {
+                    leftEyeleft = leftEyeleft * graphicOverlay.scaleFactor - graphicOverlay.postScaleWidthOffset;
+                    leftEyeright = leftEyeright * graphicOverlay.scaleFactor - graphicOverlay.postScaleWidthOffset;
+                    rightEyeleft = rightEyeleft * graphicOverlay.scaleFactor - graphicOverlay.postScaleWidthOffset;
+                    rightEyeright = rightEyeright * graphicOverlay.scaleFactor - graphicOverlay.postScaleWidthOffset;
+                }
+                rightEyebottom = rightEyebottom * graphicOverlay.scaleFactor - graphicOverlay.postScaleHeightOffset;
+                leftEyebottom = leftEyebottom * graphicOverlay.scaleFactor - graphicOverlay.postScaleHeightOffset;
+                /**
                  * Face
                  * */
                 Rect facePos = face.getBoundingBox();
@@ -433,6 +450,15 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                                     //Face xy
                                     String faceX = array[14];
                                     String faceY = array[15];
+                                    //
+                                    String leftEyeleft= array[16];
+                                    String leftEyetop= array[17];
+                                    String leftEyeright= array[18];
+                                    String leftEyebottom= array[19];
+                                    String rightEyeleft= array[20];
+                                    String rightEyetop= array[21];
+                                    String rightEyeright= array[22];
+                                    String rightEyebottom= array[23];
                                     //rename the bitmap files!
                                     int count = LivePreviewActivity.getCount();
                                     //Left Eye
@@ -475,7 +501,8 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                                     Log.d(TAG, "righteyegrid renamed: " + right_eyegrid_save_dir + " to " + file1);
                                     //Log
                                     appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + pitch + "," + roll + "," + gyroX + "," + gyroY + "," + gyroZ + "," +
-                                            accelX + "," + accelY + "," + accelZ + "," +eulerX + "," + eulerY + "," + eulerZ + "," + faceX + "," + faceY);
+                                            accelX + "," + accelY + "," + accelZ + "," +eulerX + "," + eulerY + "," + eulerZ + "," + faceX + "," + faceY+ ","  +
+                                            leftEyeleft + "," + leftEyetop + "," + leftEyeright + "," + leftEyebottom + "," + rightEyeleft + "," + rightEyetop + "," + rightEyeright + "," + rightEyebottom);
                                     LivePreviewActivity.addCount();
                                 } else {
                                     //delete files
@@ -500,7 +527,9 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                         String gyroData = LivePreviewActivity.getGyroData();
                         String acceleroData = LivePreviewActivity.getAcceleroData();
                         String rotationData = LivePreviewActivity.getOrientation();
-                        String file0 = time + "," + save_gazeX + "," + save_gazeY + "," + rotationData + "," + gyroData + "," + acceleroData + "," + face.getHeadEulerAngleX()+","+face.getHeadEulerAngleY()+","+face.getHeadEulerAngleZ()+","+face_X+","+face_Y+",.jpg";
+                        String file0 = time + "," + save_gazeX + "," + save_gazeY + "," + rotationData + "," + gyroData + "," + acceleroData + "," +
+                                face.getHeadEulerAngleX()+","+face.getHeadEulerAngleY()+","+face.getHeadEulerAngleZ()+","+face_X+","+face_Y+ ","  +
+                                leftEyeleft + "," + leftEyetop + "," + leftEyeright + "," + leftEyebottom + "," + rightEyeleft + "," + rightEyetop + "," + rightEyeright + "," + rightEyebottom +",.jpg";
                         String file1 = time + ".jpg";
                         String file2 = time + ".csv";
                         SaveBitmapToFileCache(leftBitmap, basedir + "temp/lefteye/", file0);
@@ -530,7 +559,8 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                         gridLog(lefteye_grid,eye_grid_size,basedir + "lefteyegrid/"+file1);
                         gridLog(righteye_grid,eye_grid_size,basedir + "righteyegrid/"+file1);
                         appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + rotationData + "," + gyroData + "," + acceleroData+","+
-                                face.getHeadEulerAngleX()+","+face.getHeadEulerAngleY()+","+face.getHeadEulerAngleZ() + "," + face_X + "," + face_Y);
+                                face.getHeadEulerAngleX()+","+face.getHeadEulerAngleY()+","+face.getHeadEulerAngleZ() + "," + face_X + "," + face_Y + ","  +
+                                leftEyeleft + "," + leftEyetop + "," + leftEyeright + "," + leftEyebottom + "," + rightEyeleft + "," + rightEyetop + "," + rightEyeright + "," + rightEyebottom);
                         LivePreviewActivity.addCount();
                         takePicture=false;
                     }
@@ -555,7 +585,8 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
                             gridLog(lefteye_grid, eye_grid_size, basedir + "lefteyegrid/" + file1);
                             gridLog(righteye_grid, eye_grid_size, basedir + "righteyegrid/" + file1);
                             appendLog(count + "," + save_gazeX + "," + save_gazeY + "," + rotationData + "," + gyroData + "," + acceleroData + "," +
-                                    face.getHeadEulerAngleX() + "," + face.getHeadEulerAngleY() + "," + face.getHeadEulerAngleZ() + "," + face_X + "," + face_Y);
+                                    face.getHeadEulerAngleX() + "," + face.getHeadEulerAngleY() + "," + face.getHeadEulerAngleZ() + "," + face_X + "," + face_Y + ","  +
+                                    leftEyeleft + "," + leftEyetop + "," + leftEyeright + "," + leftEyebottom + "," + rightEyeleft + "," + rightEyetop + "," + rightEyeright + "," + rightEyebottom);
                             LivePreviewActivity.addCount();
                         }
                     }
@@ -650,7 +681,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
             try {
                 logFile.createNewFile();
                 BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
-                buf.append("count,gazeX,gazeY,pitch,roll,gyroX,gyroY,gyroZ,accelX,accelY,accelZ,eulerX,eulerY,eulerZ,faceX,faceY");
+                buf.append("count,gazeX,gazeY,pitch,roll,gyroX,gyroY,gyroZ,accelX,accelY,accelZ,eulerX,eulerY,eulerZ,faceX,faceY,leftEyeleft,leftEyetop,leftEyeright,leftEyebottom,rightEyeleft,rightEyetop,rightEyeright,rightEyebottom");
                 buf.newLine();
                 buf.close();
             }
