@@ -45,7 +45,7 @@
       android:layout_height="30dp"/>
   <Button
       android:id="@+id/MyButton"
-      android:background="@android:color/white"
+      android:background="@android:color/holo_blue_dark"
       android:layout_marginLeft="53px"
       android:layout_marginTop="100px"
       android:layout_width="224px"

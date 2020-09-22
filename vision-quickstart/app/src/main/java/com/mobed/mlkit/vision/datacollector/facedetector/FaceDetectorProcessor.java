@@ -50,6 +50,8 @@ import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -228,7 +230,14 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
          * Real "Left eye" would be "Right eye" in the face detection. Because camera is left and right reversed.
          * And all terms in face detection would follow direction of camera preview image
          * */
+        boolean isNoFace = true;
         for (Face face : faces) {
+            isNoFace = false;
+            if(face != faces.get(0)) {
+                //TODO show that face is not fully appearing in the image, cannot detect face or too many faces in image
+                graphicOverlay.add(new FaceGraphic(graphicOverlay));
+                continue;
+            }
             //MOBED
             //This is how you get coordinates, and crop left and right eye
             //Look at https://firebase.google.com/docs/ml-kit/detect-faces#example_2_face_contour_detection for details.
@@ -560,12 +569,17 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
             }
             catch (java.lang.IllegalArgumentException e) {
                 Log.e(TAG, "This Error mostly occurs when one of the eye's bounding box region is partly out of display");
+                graphicOverlay.add(new FaceGraphic(graphicOverlay));
                 e.printStackTrace();
             }
             catch (Exception e){
+                graphicOverlay.add(new FaceGraphic(graphicOverlay));
                 e.printStackTrace();
             }
             Log.d(TAG, "Bitmap created");
+        }
+        if(isNoFace){
+            graphicOverlay.add(new FaceGraphic(graphicOverlay));
         }
     }
 
@@ -592,7 +606,7 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
 
     @Override
     protected void onFailure(@NonNull Exception e) {
-        Log.e(TAG, "Face detection failed " + e);
+        Log.d(TAG,"Face detection failed");
     }
 
     public void gridLog(int grid [][], int size, String path){
