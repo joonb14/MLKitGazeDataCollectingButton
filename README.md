@@ -10,13 +10,14 @@ To pull the collected frames, use the command below<br>
 <pre><code>adb pull /sdcard/CaptureApp
 </code></pre>
 I created "".nomedia" file  just to make sure collected data doesn't appear on galleries or on other apps.<br>
-I provided jupyter notebook file(<b>Tab S6 Data.ipynb</b>) to help you parse the data collected by MLKitGazeDataCollectingButton, and also show you how to  train Gaze Estimation Model used for <a href="https://github.com/joonb14/MobiGaze.git"><b>MobiGaze</b></a><br>
+I provided jupyter notebook file(<b>Tab S6 Data.ipynb</b>) to help you parse the data collected by MLKitGazeDataCollectingButton, and also show you how to  train Gaze Estimation Model used for <a href="https://github.com/joonb14/GAZEL.git"><b>GAZEL</b></a><br>
 ## Details
 This app collects various data that are used for gaze estimation based on papers. <br>
 Such as Eye cropped images, Face images, Face grid, Eye grids. <br>
 And also collects mobile sensor data such as Gyroscope, Accelerometer, Rotation vector(pitch, roll)<br>
 Thanks to Firebase MLKit, we could also collected Euler angles, and Face center position.<br>
 ### Configuration
+Configure the values in <b>FaceDetectorProcessor.java</b>
 <pre><code>/**
 * Change Data Collection Mode by MODE Value
 */
