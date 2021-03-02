@@ -5,8 +5,9 @@ This work is about collecting Ground-truth Gaze Data.<br>
 I tested it on Galaxy Tab S6, Galaxy S9+, Galaxy S10+, Pixel 2 XL, Pixel 3 XL.<br>
 Depending on the performance of processor, this collecting app will run at 10-20FPS.<br>
 You just have to click and stare the button until button moves to another point on the screen. <br>
-I doubt that there will be anybody who is willing to collect 99999 data at once, but just to make sure, you need to pull the frames before you reach the count  limit 100000.<br>
+I doubt that there will be anybody who is willing to collect 99999 data at once, but just to make sure, you need to pull the frames before you reach the count  limit 100000. If you want to collect <br>
 To pull the collected frames, use the command below<br>
+
 ```shell
 adb pull /sdcard/CaptureApp
 ```
@@ -69,4 +70,9 @@ The frames(face, lefteye, righteye) are stored in zero filed format like <br>
 00000.jpg	00001.jpg	00002.jpg	00003.jpg	00004.jpg	...
 ```
 The numbers align with the count value in log.csv<br>
+I provide notebook file that show the process of making the dataset 
+
+### Training Gaze Estimation Moodel
+
+
 
