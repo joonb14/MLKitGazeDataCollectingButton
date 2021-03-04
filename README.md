@@ -83,11 +83,66 @@ But if you follow the written instruction, collect your gaze data with <a href="
 <b>[Note] For the evaluation  we used data collected from 10 participants to train general model and calibrated it by each user's implicitly collected frames by Data Collecting Launcher. Not the toy model in the GAZEL.ipynb file</b>
 
 ### [Important] TensorFlow Lite Conversion Guideline!
-If you don't follow the guideline you would get errors like <a href="https://github.com/tensorflow/tensorflow/issues/19982"><b>this</b></a><br>
-```terminal
-java.lang.NullPointerException: Internal error: Cannot allocate memory for the interpreter: tensorflow/contrib/lite/kernels/conv.cc:191 input->dims->size != 4 (0 != 4)
+If you don't follow the guideline you would get errors like <a href="https://github.com/tensorflow/tensorflow/issues/19982"><b>this</b></a> when using TFLite interpreter in the Android device<br>
+```
+java.lang.NullPointerException: Internal error: Cannot allocate memory for the interpreter: tensorflow/contrib/lite/kernels/conv.cc:191 input->dims->size != 3 (1 != 3)
+```
+This error occurs because of the shape of multiple inputs are not same, specifically dimension of them. I will show you the example with code<br>
+```python
+# Keras
+
+# Left Eye
+input1 = Input(shape=(resolution, resolution,channels), name='left_eye')
+# Right Eye
+input2 = Input(shape=(resolution, resolution,channels), name='right_eye')
+# Facepos
+input4 = Input(shape=(2), name='facepos')
+#Euler
+input3 = Input(shape=(3), name='euler')
+# Eye size
+input5 = Input(shape=(2), name='left_eye_size')
+input6 = Input(shape=(2), name='right_eye_size')
+```
+In the above code you can see that input1,2's dimension is 3 and others are 1.<br>
+This is the reason why you get ```input->dims->size != 3 (1 != 3)``` error when you try to use interpreter with multiple inputs composed of different dimension. So to solve this error, you should expand all the inputs' dimension to the largest dimension. See the code below.<br>
+
+```python
+# Keras
+
+# Left Eye
+input1 = Input(shape=(resolution, resolution,channels), name='left_eye')
+# Right Eye
+input2 = Input(shape=(resolution, resolution,channels), name='right_eye')
+# Facepos
+input4 = Input(shape=(1, 1, 2), name='facepos')
+#Euler
+input3 = Input(shape=(1, 1, 3), name='euler')
+# Eye size
+input5 = Input(shape=(1, 1, 2), name='left_eye_size')
+input6 = Input(shape=(1, 1, 2), name='right_eye_size')
+```
+I expand all input3,4,5,6 to be 3 dimension. Now we need to reshape the loaded training data to match the input shape<br>
+```python
+gaze_point = np.load(target+"gaze_point.npy").astype(float)
+left_eye = np.load(target+"left_eye.npy").reshape(-1,resolution,resolution,channels)
+right_eye = np.load(target+"right_eye.npy").reshape(-1,resolution,resolution,channels)
+euler = np.load(target+"euler.npy").reshape(-1,1,1,3)
+facepos = np.load(target+"facepos.npy").reshape(-1,1,1,2)
+left_eye_right_top = np.load(target+"left_eye_right_top.npy")
+left_eye_left_bottom = np.load(target+"left_eye_left_bottom.npy")
+right_eye_right_top = np.load(target+"right_eye_right_top.npy")
+right_eye_left_bottom = np.load(target+"right_eye_left_bottom.npy")
+
+left_eye_right_top[:,1] = left_eye_right_top[:,1] - left_eye_left_bottom[:,1]
+left_eye_right_top[:,0] = left_eye_left_bottom[:,0] - left_eye_right_top[:,0]
+
+right_eye_right_top[:,1] = right_eye_right_top[:,1] - right_eye_left_bottom[:,1]
+right_eye_right_top[:,0] = right_eye_left_bottom[:,0] - right_eye_right_top[:,0]
+
+left_eye_size = left_eye_right_top.reshape(-1,1,1,2)
+right_eye_size = left_eye_left_bottom.reshape(-1,1,1,2)
 ```
 
-
+Now, if you matched the dimensions of inputs, you are ready to go!
 
 
