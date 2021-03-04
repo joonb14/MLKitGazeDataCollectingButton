@@ -44,9 +44,10 @@ Unless, it will be outlier data that will harm your model accuracy.<br>
 
 ### Parsing Collected Data
 
-<a href="https://github.com/joonb14/MLKitGazeDataCollectingButton/blob/master/Data%20parsing.ipynb">Data Parsing.ipynb</a> is about parsing the data collected from the MLKitDataCollectingButton. <br>
+<a href="https://github.com/joonb14/MLKitGazeDataCollectingButton/blob/master/Data%20parsing.ipynb">Data Parsing.ipynb</a> is about parsing the data collected from the MLKitGazeDataCollectingButton. <br>
 Suppose your collected data is stored in <b>/special/jbpark/TabS6/Joonbeom/</b> directory<br>
 The directory structure will be like below<br>
+
 ```
 ▼ /special/jbpark/TabS6/Joonbeom/
 	▶ face
@@ -58,7 +59,7 @@ The directory structure will be like below<br>
 	▶ log.csv
 
 ```
-In face, lefteye, righteye directory there will be extracted frame images by MLKitDataCollectingButton. And in facegrid, lefteyegrid, righteyegrid there will be grid data consists of 0 and 1 (This is for training and testing <a href="https://ieeexplore.ieee.org/document/7780608">iTracker</a> and <a href="https://ieeexplore.ieee.org/document/8669057">GazeEstimator</a>).<br>
+In face, lefteye, righteye directory there will be extracted frame images by MLKitGazeDataCollectingButton. And in facegrid, lefteyegrid, righteyegrid there will be grid data consists of 0 and 1 (This is for training and testing <a href="https://ieeexplore.ieee.org/document/7780608">iTracker</a> and <a href="https://ieeexplore.ieee.org/document/8669057">GazeEstimator</a>).<br>
 The log.csv contains mobile embedded sensing data and software computed values.<br>
 
 ```
@@ -145,4 +146,7 @@ right_eye_size = left_eye_left_bottom.reshape(-1,1,1,2)
 
 Now, if you matched the dimensions of inputs, you are ready to go!
 
+### Discussion
 
+I used only S9+ for accuracy testing device. So for generalization it would be better to use normalized inputs for left/right eye sizes, euler x,y,z, facepos.<br>
+Also, it would definitely better to use large scale dataset for training feature extraction layer. I realized this after submitting the paper unfortunately... So I would recommend using larger dataset for training CNN layers then substitute the architecture with ours, fine tune the architecture with collected data from MLKitGazeDataCollectingButton.
