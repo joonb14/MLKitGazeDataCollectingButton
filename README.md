@@ -85,7 +85,7 @@ But if you follow the written instruction, collect your gaze data with <a href="
 ### [Important] TensorFlow Lite Conversion Guideline!
 If you don't follow the guideline you would get errors like <a href="https://github.com/tensorflow/tensorflow/issues/19982"><b>this</b></a> when using TFLite interpreter in the Android device<br>
 ```
-java.lang.NullPointerException: Internal error: Cannot allocate memory for the interpreter: tensorflow/contrib/lite/kernels/conv.cc:191 input->dims->size != 3 (1 != 3)
+java.lang.NullPointerException: Internal error: Cannot allocate memory for the interpreter: tensorflow/contrib/lite/kernels/conv.cc:191 input->dims->size != N (M != N)
 ```
 This error occurs because of the shape of multiple inputs are not same, specifically dimension of them. I will show you the example with code<br>
 ```python
@@ -104,7 +104,7 @@ input5 = Input(shape=(2), name='left_eye_size')
 input6 = Input(shape=(2), name='right_eye_size')
 ```
 In the above code you can see that input1,2's dimension is 3 and others are 1.<br>
-This is the reason why you get ```input->dims->size != 3 (1 != 3)``` error when you try to use interpreter with multiple inputs composed of different dimension. So to solve this error, you should expand all the inputs' dimension to the largest dimension. See the code below.<br>
+This is the reason why you get ```input->dims->size != N (M != N)``` error when you try to use interpreter with multiple inputs composed of different dimension. So to solve this error, you should expand all the inputs' dimension to the largest dimension. See the code below.<br>
 
 ```python
 # Keras
